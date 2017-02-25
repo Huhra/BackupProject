@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="BackupDbModel.Store" Provider="System.Data.SQLite.EF6" ProviderManifestToken="data source=D:\Dev\BackupProject\Core.Backup\BackupDb.db" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Directory">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="integer" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+          <Property Name="FullPath" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+          <Property Name="IsNew" Type="integer" Nullable="false" />
+        </EntityType>
+        <EntityType Name="File">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="integer" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+          <Property Name="FullPath" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+          <Property Name="Crc" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+          <Property Name="LastWriteTime" Type="decimal" Precision="53" Scale="0" Nullable="false" />
+          <Property Name="IsNew" Type="integer" Nullable="false" />
+          <Property Name="DirectoryId" Type="integer" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'main.Parameters' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Parameters">
+          <Key>
+            <PropertyRef Name="Xml" />
+          </Key>
+          <Property Name="Xml" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_File_0_0">
+          <End Role="Directory" Type="Self.Directory" Multiplicity="1" />
+          <End Role="File" Type="Self.File" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Directory">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="File">
+              <PropertyRef Name="DirectoryId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="BackupDbModelStoreContainer">
+          <EntitySet Name="Directory" EntityType="Self.Directory" store:Type="Tables" />
+          <EntitySet Name="File" EntityType="Self.File" store:Type="Tables" />
+          <EntitySet Name="Parameters" EntityType="Self.Parameters" store:Type="Tables">
+            <DefiningQuery>SELECT 
+[Parameters].[Xml] AS [Xml]
+FROM [Parameters] AS [Parameters]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_File_0_0" Association="Self.FK_File_0_0">
+            <End Role="Directory" EntitySet="Directory" />
+            <End Role="File" EntitySet="File" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="BackupDbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="BackupDbEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Directories" EntityType="BackupDbModel.Directory" />
+          <EntitySet Name="Files" EntityType="BackupDbModel.File" />
+          <EntitySet Name="Parameters" EntityType="BackupDbModel.Parameter" />
+          <AssociationSet Name="FK_File_0_0" Association="BackupDbModel.FK_File_0_0">
+            <End Role="Directory" EntitySet="Directories" />
+            <End Role="File" EntitySet="Files" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="Directory">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Name="FullPath" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Name="IsNew" Type="Int64" Nullable="false" />
+          <NavigationProperty Name="Files" Relationship="BackupDbModel.FK_File_0_0" FromRole="Directory" ToRole="File" />
+        </EntityType>
+        <EntityType Name="File">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" />
+          <Property Name="Name" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Name="FullPath" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Name="Crc" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+          <Property Name="LastWriteTime" Type="Decimal" Nullable="false" Precision="53" Scale="0" />
+          <Property Name="IsNew" Type="Int64" Nullable="false" />
+          <Property Name="DirectoryId" Type="Int64" Nullable="false" />
+          <NavigationProperty Name="Directory" Relationship="BackupDbModel.FK_File_0_0" FromRole="File" ToRole="Directory" />
+        </EntityType>
+        <EntityType Name="Parameter">
+          <Key>
+            <PropertyRef Name="Xml" />
+          </Key>
+          <Property Name="Xml" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <Association Name="FK_File_0_0">
+          <End Type="BackupDbModel.Directory" Role="Directory" Multiplicity="1" />
+          <End Type="BackupDbModel.File" Role="File" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Directory">
+              <PropertyRef Name="Id" />
+            </Principal>
+            <Dependent Role="File">
+              <PropertyRef Name="DirectoryId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="BackupDbModelStoreContainer" CdmEntityContainer="BackupDbEntities">
+          <EntitySetMapping Name="Directories">
+            <EntityTypeMapping TypeName="BackupDbModel.Directory">
+              <MappingFragment StoreEntitySet="Directory">
+                <ScalarProperty Name="IsNew" ColumnName="IsNew" />
+                <ScalarProperty Name="FullPath" ColumnName="FullPath" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Files">
+            <EntityTypeMapping TypeName="BackupDbModel.File">
+              <MappingFragment StoreEntitySet="File">
+                <ScalarProperty Name="DirectoryId" ColumnName="DirectoryId" />
+                <ScalarProperty Name="IsNew" ColumnName="IsNew" />
+                <ScalarProperty Name="LastWriteTime" ColumnName="LastWriteTime" />
+                <ScalarProperty Name="Crc" ColumnName="Crc" />
+                <ScalarProperty Name="FullPath" ColumnName="FullPath" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Parameters">
+            <EntityTypeMapping TypeName="BackupDbModel.Parameter">
+              <MappingFragment StoreEntitySet="Parameters">
+                <ScalarProperty Name="Xml" ColumnName="Xml" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
