@@ -1,5 +1,6 @@
 ﻿using Core.Backup.Crc;
 using Core.Backup.FileSearcher;
+using Core.Backup.Parameters;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,13 @@ namespace Core.Backup
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(BackupWorker));
         private static readonly object _dbLock = new object();
+
+        private static readonly DateTime _24hoursAgo;
+
+        static BackupWorker()
+        {
+            _24hoursAgo = DateTime.Now.Subtract(TimeSpan.FromHours(24));
+        }
 
         public Directory GetDirectory(string path)
         {
@@ -50,10 +58,15 @@ namespace Core.Backup
                     {
                         var crc = GetCrc(path);
                         var fi = new FileInfo(path);
+
+                        StatusFlag status = StatusFlag.Unchanged;
+                        if (fi.LastWriteTime > _24hoursAgo)
+                            status = StatusFlag.Changed;
+
                         file = new File
                         {
                             FullPath = path,
-                            IsNew = 1,
+                            IsNew = (long)status,
                             Name = fi.Name,
                             Crc = crc,
                             DirectoryId = directory.Id,
@@ -79,7 +92,7 @@ namespace Core.Backup
                 var crc = GetCrc(file.FullPath);
                 if (crc != file.Crc)
                 {
-                    file.IsNew = 2;
+                    file.IsNew = (long)StatusFlag.Changed;
                     db.SaveChanges();
                 }
             }
@@ -103,7 +116,6 @@ namespace Core.Backup
             using (var db = new BackupDbEntities())
             {
                 var changes = db.Files.Where(x => x.IsNew == 2).ToList();
-                Console.WriteLine("");
             }
             return 0;
         }
@@ -111,6 +123,7 @@ namespace Core.Backup
         public async Task<int> Start()
         {
             await Task.Yield();
+            var config = ConfigManager.GetConfig();
             var folders = Searcher.GetFolders(@"D:\Medias").ToList();
             Console.WriteLine($"Folders count: {folders.Count}");
             int count = 0;
@@ -119,9 +132,10 @@ namespace Core.Backup
                 await Task.Yield();
                 var directory = GetDirectory(folder);
                 await Task.Yield();
-                var files = Searcher.GetFiles(folder).AsParallel().Select(file =>
+                var files = Searcher.GetFiles(folder).Select(filePath =>
                 {
-                    return GetFile(file, directory);
+                    var file = GetFile(filePath, directory);
+                    return file.Id;
                 }).ToList();
                 lock (_dbLock)
                     count += files.Count;

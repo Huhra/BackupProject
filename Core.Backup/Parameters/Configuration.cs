@@ -14,5 +14,15 @@ namespace Core.Backup.Parameters
 
         [XmlElement("StartHour")]
         public int StartHour { get; set; }
+
+        public static Configuration Default()
+        {
+            return new Configuration
+            {
+                AlreadyRan = false,
+                RootDirectory = Environment.CurrentDirectory,
+                StartHour = 22
+            };
+        }
     }
 }

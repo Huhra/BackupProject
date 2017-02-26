@@ -14,6 +14,7 @@ namespace Core.Backup
     
     public partial class Parameter
     {
+        public long Id { get; set; }
         public string Xml { get; set; }
     }
 }

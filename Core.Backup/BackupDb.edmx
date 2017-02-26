@@ -26,12 +26,11 @@
           <Property Name="IsNew" Type="integer" Nullable="false" />
           <Property Name="DirectoryId" Type="integer" Nullable="false" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'main.Parameters' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="Parameters">
           <Key>
-            <PropertyRef Name="Xml" />
+            <PropertyRef Name="Id" />
           </Key>
+          <Property Name="Id" Type="integer" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="Xml" Type="nvarchar" MaxLength="2147483647" Nullable="false" />
         </EntityType>
         <Association Name="FK_File_0_0">
@@ -49,11 +48,7 @@ warning 6002: The table/view 'main.Parameters' does not have a primary key defin
         <EntityContainer Name="BackupDbModelStoreContainer">
           <EntitySet Name="Directory" EntityType="Self.Directory" store:Type="Tables" />
           <EntitySet Name="File" EntityType="Self.File" store:Type="Tables" />
-          <EntitySet Name="Parameters" EntityType="Self.Parameters" store:Type="Tables">
-            <DefiningQuery>SELECT 
-[Parameters].[Xml] AS [Xml]
-FROM [Parameters] AS [Parameters]</DefiningQuery>
-          </EntitySet>
+          <EntitySet Name="Parameters" EntityType="Self.Parameters" store:Type="Tables" />
           <AssociationSet Name="FK_File_0_0" Association="Self.FK_File_0_0">
             <End Role="Directory" EntitySet="Directory" />
             <End Role="File" EntitySet="File" />
@@ -66,11 +61,11 @@ FROM [Parameters] AS [Parameters]</DefiningQuery>
         <EntityContainer Name="BackupDbEntities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Directories" EntityType="BackupDbModel.Directory" />
           <EntitySet Name="Files" EntityType="BackupDbModel.File" />
-          <EntitySet Name="Parameters" EntityType="BackupDbModel.Parameter" />
           <AssociationSet Name="FK_File_0_0" Association="BackupDbModel.FK_File_0_0">
             <End Role="Directory" EntitySet="Directories" />
             <End Role="File" EntitySet="Files" />
           </AssociationSet>
+          <EntitySet Name="Parameters" EntityType="BackupDbModel.Parameter" />
         </EntityContainer>
         <EntityType Name="Directory">
           <Key>
@@ -95,12 +90,6 @@ FROM [Parameters] AS [Parameters]</DefiningQuery>
           <Property Name="DirectoryId" Type="Int64" Nullable="false" />
           <NavigationProperty Name="Directory" Relationship="BackupDbModel.FK_File_0_0" FromRole="File" ToRole="Directory" />
         </EntityType>
-        <EntityType Name="Parameter">
-          <Key>
-            <PropertyRef Name="Xml" />
-          </Key>
-          <Property Name="Xml" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
-        </EntityType>
         <Association Name="FK_File_0_0">
           <End Type="BackupDbModel.Directory" Role="Directory" Multiplicity="1" />
           <End Type="BackupDbModel.File" Role="File" Multiplicity="*" />
@@ -113,6 +102,13 @@ FROM [Parameters] AS [Parameters]</DefiningQuery>
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="Parameter">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Xml" Type="String" Nullable="false" MaxLength="2147483647" FixedLength="false" Unicode="true" />
+        </EntityType>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -146,6 +142,7 @@ FROM [Parameters] AS [Parameters]</DefiningQuery>
             <EntityTypeMapping TypeName="BackupDbModel.Parameter">
               <MappingFragment StoreEntitySet="Parameters">
                 <ScalarProperty Name="Xml" ColumnName="Xml" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

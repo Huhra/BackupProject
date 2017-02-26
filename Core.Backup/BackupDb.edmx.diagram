@@ -7,8 +7,8 @@
       <Diagram DiagramId="80e99d06f71f4902b2d239036413379b" Name="Diagram1">
         <EntityTypeShape EntityType="BackupDbModel.Directory" Width="1.5" PointX="0.75" PointY="1.25" />
         <EntityTypeShape EntityType="BackupDbModel.File" Width="1.5" PointX="3" PointY="1" />
-        <EntityTypeShape EntityType="BackupDbModel.Parameter" Width="1.5" PointX="5" PointY="1.75" />
         <AssociationConnector Association="BackupDbModel.FK_File_0_0" />
+        <EntityTypeShape EntityType="BackupDbModel.Parameter" Width="1.5" PointX="5.25" PointY="1.625" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
