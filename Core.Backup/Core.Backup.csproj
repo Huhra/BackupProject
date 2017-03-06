@@ -86,6 +86,10 @@
     </Compile>
     <Compile Include="BackupTimer.cs" />
     <Compile Include="BackupWorker.cs" />
+    <Compile Include="Copy\CopyProgress.cs" />
+    <Compile Include="Copy\EndCopyProgress.cs" />
+    <Compile Include="Copy\InitCopyProgress.cs" />
+    <Compile Include="Copy\NormalCopyProgress.cs" />
     <Compile Include="Crc\Checksum.cs" />
     <Compile Include="Directory.cs">
       <DependentUpon>BackupDb.tt</DependentUpon>

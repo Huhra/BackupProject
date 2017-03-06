@@ -11,10 +11,14 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <DataTemplate x:Key="ConfigurationTestTemplate" DataType="models:ConfigurationTest">
             <StackPanel Orientation="Horizontal">
-                <Grid Height="16" Width="16" Background="Green"
-                      Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
-                <Grid Height="16" Width="16" Background="Red"
-                      Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}, ConverterParameter=i}"/>
+                <Border BorderBrush="Black" BorderThickness="2" Margin="1"
+                        Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}">
+                    <Grid Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Background="Green" />
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="2" Margin="1"
+                        Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}, ConverterParameter=i}">
+                    <Grid Width="{Binding RelativeSource={RelativeSource Self}, Path=ActualHeight}" Background="Red"/>
+                </Border>
                 <Grid Width="5" />
                 <TextBlock Text="{Binding OkMessage}" Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
                 <TextBlock Text="{Binding ErrorMessage}" Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}, ConverterParameter=i}"/>
