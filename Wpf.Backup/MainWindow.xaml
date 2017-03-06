@@ -5,21 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Wpf.Backup"
         xmlns:prop="clr-namespace:Wpf.Backup.Properties"
+        xmlns:controls="clr-namespace:Wpf.Backup.Controls"
+        xmlns:converters="clr-namespace:Wpf.Backup.Converters"
         mc:Ignorable="d" Icon="pack://application:,,,/backup.png"
         Title="Backup" Height="500" Width="800">
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Menu>
             <MenuItem Header="{x:Static prop:Resources.Menu_MainWindow_Menu}">
-                <MenuItem Command="{Binding Save}" Header="Save" />
+                <MenuItem Command="{Binding Save}" Header="{x:Static prop:Resources.Menu_MainWindow_Save}" />
                 <MenuItem Command="{Binding Exit}" Header="{x:Static prop:Resources.Menu_MainWindow_Exit}" />
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -28,10 +34,22 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="WatchDirectory: " />
-            <TextBox Grid.Column="1" Text="{Binding RootDirectory}" />
-            <TextBlock Margin="0,2,0,0" Grid.Row="1" Text="Start time: " />
-            <TextBox Margin="0,2,0,0" Grid.Row="1" Grid.Column="1" Text="{Binding StartHour}" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Watch Directory: " />
+            <TextBox Grid.Row="0" Grid.Column="1"
+                     Text="{Binding RootDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Remote Directory: " />
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Text="{Binding RemoteDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Margin="0,2,0,0" Grid.Row="2" Grid.Column="0" Text="CheckDifferentFiles time: " />
+            <TextBox Margin="0,2,0,0" Grid.Row="2" Grid.Column="1"
+                     Text="{Binding StartHour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <CheckBox Margin="0,2,0,0" Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="0" Content="Delete distant files"
+                      IsChecked="{Binding DeleteFiles, Mode=TwoWay}"/>
         </Grid>
+        <controls:ConfigurationTestControl DataContext="{Binding}" Grid.Row="2"
+                                           Visibility="{Binding ShowTestResults, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
+        <Button Grid.Row="3" Height="80" Command="{Binding TestConfiguration}">
+            <TextBlock FontSize="22" Text="Test configuration" />
+        </Button>
     </Grid>
 </Window>

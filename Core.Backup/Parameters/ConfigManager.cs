@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using log4net;
 
 namespace Core.Backup.Parameters
 {
     public static class ConfigManager
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(ConfigManager));
         private static Configuration _config;
 
         public static Configuration GetConfig()
@@ -23,7 +25,7 @@ namespace Core.Backup.Parameters
                     if (param == null)
                     {
                         _config = Configuration.Default();
-                        var serialized = Serializer.SerializeObject(_config);
+                        var serialized = _config.SerializeObject();
                         db.Parameters.Add(new Parameter
                         {
                             Xml = serialized
@@ -31,14 +33,43 @@ namespace Core.Backup.Parameters
                         db.SaveChanges();
                         return _config;
                     }
-                    _config = Serializer.Deserialize<Configuration>(param.Xml);
+                    _config = param.Xml.Deserialize<Configuration>();
                     return _config;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                return null;
+                Logger.Error(ex.ToString());
+                return Configuration.Default();
+            }
+        }
+
+        public static bool SetConfig(Configuration config)
+        {
+            try
+            {
+                _config = config;
+                using (var db = new BackupDbEntities())
+                {
+                    var serialized = _config.SerializeObject();
+                    var param = db.Parameters.FirstOrDefault();
+                    if (param == null)
+                    {
+                        db.Parameters.Add(new Parameter
+                        {
+                            Xml = serialized
+                        });
+                    }
+                    else
+                        param.Xml = serialized;
+                    db.SaveChanges();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex.ToString());
+                return false;
             }
         }
     }

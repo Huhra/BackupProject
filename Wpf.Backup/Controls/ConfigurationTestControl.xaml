@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="Wpf.Backup.Controls.ConfigurationTestControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Wpf.Backup.Converters"
+             xmlns:models="clr-namespace:Wpf.Backup.Models"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <DataTemplate x:Key="ConfigurationTestTemplate" DataType="models:ConfigurationTest">
+            <StackPanel Orientation="Horizontal">
+                <Grid Height="16" Width="16" Background="Green"
+                      Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
+                <Grid Height="16" Width="16" Background="Red"
+                      Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}, ConverterParameter=i}"/>
+                <Grid Width="5" />
+                <TextBlock Text="{Binding OkMessage}" Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
+                <TextBlock Text="{Binding ErrorMessage}" Visibility="{Binding Success, Converter={x:Static converters:BoolToVisibilityConverter.Instance}, ConverterParameter=i}"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ItemsControl ItemsSource="{Binding ConfigurationTests}" ItemTemplate="{StaticResource ConfigurationTestTemplate}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+    </ItemsControl>
+</UserControl>

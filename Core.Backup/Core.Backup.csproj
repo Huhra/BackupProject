@@ -84,6 +84,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>BackupDb.edmx</DependentUpon>
     </Compile>
+    <Compile Include="BackupTimer.cs" />
     <Compile Include="BackupWorker.cs" />
     <Compile Include="Crc\Checksum.cs" />
     <Compile Include="Directory.cs">

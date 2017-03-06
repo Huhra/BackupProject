@@ -123,6 +123,15 @@
   <data name="Menu_MainWindow_Menu" xml:space="preserve">
     <value>Menu</value>
   </data>
+  <data name="Menu_MainWindow_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Message_ConfigurationSaveError" xml:space="preserve">
+    <value>Error while saving configuration</value>
+  </data>
+  <data name="Message_ConfigurationSaveSuccess" xml:space="preserve">
+    <value>Configuration saved successfully</value>
+  </data>
   <data name="StartNotificationContent" xml:space="preserve">
     <value>Backup project just started, click on the icon to configure it</value>
   </data>

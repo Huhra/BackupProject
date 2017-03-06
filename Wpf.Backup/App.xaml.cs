@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Navigation;
+using Core.Backup;
+using NotifyIcon = System.Windows.Forms.NotifyIcon;
 
 namespace Wpf.Backup
 {
@@ -16,7 +11,8 @@ namespace Wpf.Backup
     /// </summary>
     public partial class App : Application
     {
-        System.Windows.Forms.NotifyIcon _trayIcon = new System.Windows.Forms.NotifyIcon();
+        private readonly NotifyIcon _trayIcon = new NotifyIcon();
+        private readonly BackupTimer _backup = new BackupTimer();
 
         public App()
         {
@@ -24,6 +20,7 @@ namespace Wpf.Backup
             _trayIcon.Icon = new Icon(iconPath);
             _trayIcon.Visible = true;
             _trayIcon.Click += TrayIconClick;
+            _backup.Start();
             //var title = Backup.Properties.Resources.StartNotificationTitle;
             //var content = Backup.Properties.Resources.StartNotificationContent;
             //_trayIcon.ShowBalloonTip(5000, title, content, System.Windows.Forms.ToolTipIcon.Info);
@@ -43,6 +40,7 @@ namespace Wpf.Backup
 
         public void DisposeAndExit()
         {
+            _backup.Dispose();
             _trayIcon.Dispose();
             Shutdown();
         }

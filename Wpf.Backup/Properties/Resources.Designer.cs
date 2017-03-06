@@ -79,6 +79,33 @@ namespace Wpf.Backup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        public static string Menu_MainWindow_Save {
+            get {
+                return ResourceManager.GetString("Menu_MainWindow_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error while saving configuration.
+        /// </summary>
+        public static string Message_ConfigurationSaveError {
+            get {
+                return ResourceManager.GetString("Message_ConfigurationSaveError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration saved successfully.
+        /// </summary>
+        public static string Message_ConfigurationSaveSuccess {
+            get {
+                return ResourceManager.GetString("Message_ConfigurationSaveSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Backup project just started, click on the icon to configure it.
         /// </summary>
         public static string StartNotificationContent {
