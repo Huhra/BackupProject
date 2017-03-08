@@ -118,51 +118,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteRemoteFiles" xml:space="preserve">
-    <value>Delete remote files</value>
+    <value>Supprimer les fichiers distants</value>
   </data>
   <data name="Language" xml:space="preserve">
-    <value>Language: </value>
+    <value>Langue: </value>
   </data>
   <data name="Language_English" xml:space="preserve">
-    <value>English</value>
+    <value>Anglais</value>
   </data>
   <data name="Language_French" xml:space="preserve">
-    <value>French</value>
+    <value>Français</value>
   </data>
   <data name="Menu_MainWindow_Exit" xml:space="preserve">
-    <value>Exit</value>
+    <value>Quitter</value>
   </data>
   <data name="Menu_MainWindow_Menu" xml:space="preserve">
     <value>Menu</value>
   </data>
   <data name="Menu_MainWindow_Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Sauvegarder</value>
   </data>
   <data name="Message_ConfigurationSaveError" xml:space="preserve">
     <value>Error while saving configuration</value>
   </data>
   <data name="Message_ConfigurationSaveSuccess" xml:space="preserve">
-    <value>Configuration saved successfully</value>
+    <value>La configuration a été sauvergardé avec succès</value>
   </data>
   <data name="RemoteDirectory" xml:space="preserve">
-    <value>Remote directory: </value>
+    <value>Dossier distant: </value>
   </data>
   <data name="StartNotificationContent" xml:space="preserve">
-    <value>Backup project just started, click on the icon to configure it</value>
+    <value>Projet de backup démarré, cliquez sur l'icone pour configurer</value>
   </data>
   <data name="StartNotificationTitle" xml:space="preserve">
-    <value>Backup project</value>
+    <value>Projet de backup</value>
   </data>
   <data name="StartTime" xml:space="preserve">
-    <value>Start time: </value>
+    <value>Heure de démarrage: </value>
   </data>
   <data name="TestConfiguration" xml:space="preserve">
-    <value>Test configuration</value>
+    <value>Tester la configuration</value>
   </data>
   <data name="ToolTip_TestInProgress" xml:space="preserve">
-    <value>Tests in progress</value>
+    <value>Tests en cours</value>
   </data>
   <data name="WatchDirectory" xml:space="preserve">
-    <value>Watch directory: </value>
+    <value>Dossier local à surveiller: </value>
   </data>
 </root>

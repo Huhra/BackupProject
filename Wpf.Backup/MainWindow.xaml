@@ -7,6 +7,7 @@
         xmlns:prop="clr-namespace:Wpf.Backup.Properties"
         xmlns:controls="clr-namespace:Wpf.Backup.Controls"
         xmlns:converters="clr-namespace:Wpf.Backup.Converters"
+        xmlns:xctk="clr-namespace:Xceed.Wpf.Toolkit;assembly=Xceed.Wpf.Toolkit"
         mc:Ignorable="d" Icon="pack://application:,,,/backup.png"
         Title="Backup" Height="500" Width="800">
     <Grid Background="White">
@@ -22,34 +23,40 @@
                 <MenuItem Command="{Binding Exit}" Header="{x:Static prop:Resources.Menu_MainWindow_Exit}" />
             </MenuItem>
         </Menu>
-        <Grid Grid.Row="1" Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Watch Directory: " />
-            <TextBox Grid.Row="0" Grid.Column="1"
+        <xctk:BusyIndicator Grid.Row="1" Margin="10" IsBusy="{Binding TestInProgress}" BusyContent="{x:Static prop:Resources.ToolTip_TestInProgress}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static prop:Resources.WatchDirectory}" />
+                <TextBox Grid.Row="0" Grid.Column="1"
                      Text="{Binding RootDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Remote Directory: " />
-            <TextBox Grid.Row="1" Grid.Column="1"
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static prop:Resources.RemoteDirectory}" />
+                <TextBox Grid.Row="1" Grid.Column="1"
                      Text="{Binding RemoteDirectory, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock Margin="0,2,0,0" Grid.Row="2" Grid.Column="0" Text="CheckDifferentFiles time: " />
-            <TextBox Margin="0,2,0,0" Grid.Row="2" Grid.Column="1"
-                     Text="{Binding StartHour, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <CheckBox Margin="0,2,0,0" Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="0" Content="Delete distant files"
-                      IsChecked="{Binding DeleteFiles, Mode=TwoWay}"/>
-        </Grid>
+                <TextBlock Margin="0,2,0,0" Grid.Row="2" Grid.Column="0" Text="{x:Static prop:Resources.StartTime}" />
+                <controls:NumericUpDown Margin="0,2,0,0" Grid.Row="2" Grid.Column="1"
+                                        NumValue="{Binding StartHour, Mode=TwoWay}" MinValue="0" MaxValue="23" />
+                <CheckBox Margin="0,2,0,0" Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="0" Content="{x:Static prop:Resources.DeleteRemoteFiles}"
+                          IsChecked="{Binding DeleteFiles, Mode=TwoWay}"/>
+                <TextBlock Margin="0,2,0,0" Grid.Row="4" Grid.Column="0" Text="{x:Static prop:Resources.Language}" />
+                <ListBox Margin="0,2,0,0" Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}" />
+            </Grid>
+        </xctk:BusyIndicator>
         <controls:ConfigurationTestControl DataContext="{Binding}" Grid.Row="2"
                                            Visibility="{Binding ShowTestResults, Converter={x:Static converters:BoolToVisibilityConverter.Instance}}"/>
-        <Button Grid.Row="3" Height="80" Command="{Binding TestConfiguration}">
-            <TextBlock FontSize="22" Text="Test configuration" />
+        <Button Grid.Row="3" Height="80" Command="{Binding TestConfiguration}"
+                IsEnabled="{Binding TestInProgress, Converter={x:Static converters:InvertBookConverter.Instance}}">
+            <TextBlock FontSize="22" Text="{x:Static prop:Resources.TestConfiguration}" />
         </Button>
     </Grid>
 </Window>

@@ -64,13 +64,39 @@ namespace Wpf.Backup.ViewModels
             get { return _showTestResults; }
             set
             {
-                _showTestResults = value; 
+                _showTestResults = value;
                 OnPropertyChanged(() => ShowTestResults);
             }
         }
 
+        private bool _testInProgress;
+        public bool TestInProgress
+        {
+            get { return _testInProgress; }
+            set
+            {
+                _testInProgress = value;
+                OnPropertyChanged(() => TestInProgress);
+            }
+        }
+
+        public ObservableCollection<string> Languages { get; }
+
+        private string _selectedLanguage;
+        public string SelectedLanguage
+        {
+            get { return _selectedLanguage; }
+            set
+            {
+                _selectedLanguage = value;
+                OnPropertyChanged(() => SelectedLanguage);
+            }
+        }
+
+
         public ObservableCollection<ConfigurationTest> ConfigurationTests { get; }
             = new ObservableCollection<ConfigurationTest>();
+        
 
         public ICommand Save { get; }
         public ICommand Exit { get; }
@@ -78,11 +104,20 @@ namespace Wpf.Backup.ViewModels
         
         public MainWindowViewModel()
         {
+            Languages = new ObservableCollection<string>
+            {
+                Resources.Language_English,
+                Resources.Language_French,
+            };
             _config = ConfigManager.GetConfig();
             StartHour = _config.StartHour;
             DeleteFiles = _config.DeleteFiles;
             RootDirectory = _config.RootDirectory;
             RemoteDirectory = _config.RemoteDirectory;
+            if (_config.Culture == "en-US")
+                SelectedLanguage = Languages[0];
+            else
+                SelectedLanguage = Languages[1];
             Save = new DelegateCommand(DoSave);
             Exit = new DelegateCommand(DoExit);
             TestConfiguration = new DelegateCommand(DoTestConfiguration);
@@ -94,6 +129,10 @@ namespace Wpf.Backup.ViewModels
             _config.StartHour = StartHour;
             _config.DeleteFiles = DeleteFiles;
             _config.RootDirectory = RootDirectory;
+            if (_selectedLanguage == Resources.Language_English)
+                _config.Culture = "en-US";
+            else
+                _config.Culture = "fr-FR";
         }
 
         private void DoSave()
@@ -113,36 +152,48 @@ namespace Wpf.Backup.ViewModels
 
         private void DoTestConfiguration()
         {
+            TestInProgress = true;
             ConfigurationTests.Clear();
             SetConfigFields();
-            var result = _config.TestConfiguration();
-            var testModels = new List<ConfigurationTest>();
-            testModels.Add(new ConfigurationTest(
-                result.Contains(Configuration.TestConfigResult.RootDirectoryVisible),
-                "Root directory seems to be visible by the program.",
-                "Root directory is not visible by the program or does not exists."
-                ));
-            testModels.Add(new ConfigurationTest(
-                result.Contains(Configuration.TestConfigResult.RemoteDirectoryVisible),
-                "Remote directory seems to be visible by the program.",
-                "Remote directory is not visible by the program or does not exists."
-                ));
-            testModels.Add(new ConfigurationTest(
-                result.Contains(Configuration.TestConfigResult.WriteRights),
-                "The program have write permission in remote directory.",
-                "The program does not have write permission in remote directory."
-                ));
-            testModels.Add(new ConfigurationTest(
-                result.Contains(Configuration.TestConfigResult.DeleteRights),
-                "The program have delete permission in remote directory.",
-                "The program does not have delete permission in remote directory."
-                ));
-            if (result.Contains(Configuration.TestConfigResult.UnknownError))
+            System.Threading.Tasks.Task<List<ConfigurationTest>>.Factory.StartNew(() =>
+            {
+                var result = _config.TestConfiguration();
+                var testModels = new List<ConfigurationTest>();
                 testModels.Add(new ConfigurationTest(
-                    "An unknown error occured, please check the logs."
+                    result.Contains(Configuration.TestConfigResult.RootDirectoryVisible),
+                    "Root directory seems to be visible by the program.",
+                    "Root directory is not visible by the program or does not exists."
                     ));
-            ConfigurationTests.AddRange(testModels);
-            ShowTestResults = true;
+                testModels.Add(new ConfigurationTest(
+                    result.Contains(Configuration.TestConfigResult.RemoteDirectoryVisible),
+                    "Remote directory seems to be visible by the program.",
+                    "Remote directory is not visible by the program or does not exists."
+                    ));
+                testModels.Add(new ConfigurationTest(
+                    result.Contains(Configuration.TestConfigResult.WriteRights),
+                    "The program have write permission in remote directory.",
+                    "The program does not have write permission in remote directory."
+                    ));
+                testModels.Add(new ConfigurationTest(
+                    result.Contains(Configuration.TestConfigResult.DeleteRights),
+                    "The program have delete permission in remote directory.",
+                    "The program does not have delete permission in remote directory."
+                    ));
+                if (result.Contains(Configuration.TestConfigResult.UnknownError))
+                    testModels.Add(new ConfigurationTest(
+                        "An unknown error occured, please check the logs."
+                        ));
+                return testModels;
+            })
+            .ContinueWith(task =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ConfigurationTests.AddRange(task.Result);
+                    ShowTestResults = true;
+                    TestInProgress = false;
+                });
+            });
         }
     }
 }

@@ -15,23 +15,27 @@ namespace Core.Backup.Parameters
 
         [XmlAttribute("RootDirectory")]
         public string RootDirectory { get; set; }
-
         [XmlAttribute("RemoteDirectory")]
         public string RemoteDirectory { get; set; }
-
         [XmlElement("StartHour")]
         public int StartHour { get; set; }
         [XmlAttribute("DeleteFiles")]
         public bool DeleteFiles { get; set; }
+        [XmlAttribute("Culture")]
+        public string Culture { get; set; }
 
         public static Configuration Default()
         {
+            var culture = System.Threading.Thread.CurrentThread.CurrentCulture.ToString();
+            if (culture != "fr-FR" && culture != "en-US")
+                culture = "en-US";
             return new Configuration
             {
                 RootDirectory = Environment.CurrentDirectory,
                 RemoteDirectory = @"\\remote-computer\Folder\",
                 StartHour = 22,
-                DeleteFiles = false
+                DeleteFiles = false,
+                Culture = culture
             };
         }
 

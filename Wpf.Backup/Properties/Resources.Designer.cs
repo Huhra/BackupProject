@@ -61,6 +61,42 @@ namespace Wpf.Backup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete remote files.
+        /// </summary>
+        public static string DeleteRemoteFiles {
+            get {
+                return ResourceManager.GetString("DeleteRemoteFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Language: .
+        /// </summary>
+        public static string Language {
+            get {
+                return ResourceManager.GetString("Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to English.
+        /// </summary>
+        public static string Language_English {
+            get {
+                return ResourceManager.GetString("Language_English", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to French.
+        /// </summary>
+        public static string Language_French {
+            get {
+                return ResourceManager.GetString("Language_French", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         public static string Menu_MainWindow_Exit {
@@ -106,6 +142,15 @@ namespace Wpf.Backup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remote directory: .
+        /// </summary>
+        public static string RemoteDirectory {
+            get {
+                return ResourceManager.GetString("RemoteDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Backup project just started, click on the icon to configure it.
         /// </summary>
         public static string StartNotificationContent {
@@ -120,6 +165,42 @@ namespace Wpf.Backup.Properties {
         public static string StartNotificationTitle {
             get {
                 return ResourceManager.GetString("StartNotificationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Start time: .
+        /// </summary>
+        public static string StartTime {
+            get {
+                return ResourceManager.GetString("StartTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Test configuration.
+        /// </summary>
+        public static string TestConfiguration {
+            get {
+                return ResourceManager.GetString("TestConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tests in progress.
+        /// </summary>
+        public static string ToolTip_TestInProgress {
+            get {
+                return ResourceManager.GetString("ToolTip_TestInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Watch directory: .
+        /// </summary>
+        public static string WatchDirectory {
+            get {
+                return ResourceManager.GetString("WatchDirectory", resourceCulture);
             }
         }
     }
