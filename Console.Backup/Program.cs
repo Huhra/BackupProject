@@ -26,8 +26,7 @@ namespace Console.Backup
         {
             await Task.Yield();
             var start = DateTime.Now.ToLongTimeString();
-            var ret = await backup.CheckDifferentFiles();
-            var test = backup.GetDifferentFiles();
+            await backup.DoBackup();
             var end = DateTime.Now.ToLongTimeString();
             System.Console.WriteLine($"CheckDifferentFiles: {start}");
             System.Console.WriteLine($"End: {end}");

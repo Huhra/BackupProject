@@ -24,7 +24,7 @@ namespace Core.Backup
         private void InitTimer()
         {
             Logger.Debug("InitTimer");
-            _timer.Interval = TimeSpan.FromSeconds(60).TotalMilliseconds;
+            _timer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
             _timer.AutoReset = true;
             _timer.Elapsed += TimerOnElapsed;
         }
@@ -44,11 +44,28 @@ namespace Core.Backup
             }
             if (DateTime.Now - _lastStart < TimeSpan.FromHours(12))
             {
-                Logger.Info($"Backup was already ran {(DateTime.Now - _lastStart).TotalMinutes} minutes ago");
+                var minutes = (DateTime.Now - _lastStart).TotalMinutes;
+                Logger.Info($"Backup was already ran {minutes:N1} minutes ago");
                 return;
             }
             _lastStart = DateTime.Now;
             Logger.Info("Starting backup");
+            var task = Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    var backupWorker = new BackupWorker();
+                    backupWorker.DoBackup().Wait();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex.ToString());
+                    return false;
+                }
+            });
+            task.Wait(-1);
+            Logger.Info("End of backup");
         }
 
         private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)

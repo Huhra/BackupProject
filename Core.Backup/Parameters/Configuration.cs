@@ -15,12 +15,19 @@ namespace Core.Backup.Parameters
 
         [XmlAttribute("RootDirectory")]
         public string RootDirectory { get; set; }
+
+        [XmlAttribute("LastRootDirectory")]
+        public string LastRootDirectory { get; set; }
+
         [XmlAttribute("RemoteDirectory")]
         public string RemoteDirectory { get; set; }
+
         [XmlElement("StartHour")]
         public int StartHour { get; set; }
+
         [XmlAttribute("DeleteFiles")]
         public bool DeleteFiles { get; set; }
+
         [XmlAttribute("Culture")]
         public string Culture { get; set; }
 
@@ -33,6 +40,7 @@ namespace Core.Backup.Parameters
             {
                 RootDirectory = Environment.CurrentDirectory,
                 RemoteDirectory = @"\\remote-computer\Folder\",
+                LastRootDirectory = string.Empty,
                 StartHour = 22,
                 DeleteFiles = false,
                 Culture = culture

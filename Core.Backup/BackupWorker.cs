@@ -18,67 +18,62 @@ namespace Core.Backup
 
         static BackupWorker()
         {
+            Logger.Info("BackupWorker ctor");
             _30hoursAgo = DateTime.Now.Subtract(TimeSpan.FromHours(30));
         }
 
         public Directory GetDirectory(string path)
         {
-            lock (_dbLock)
+            using (var db = new BackupDbEntities())
             {
-                using (var db = new BackupDbEntities())
+                var directory = db.Directories.FirstOrDefault(dir => dir.FullPath == path);
+                if (directory == null)
                 {
-                    var directory = db.Directories.FirstOrDefault(dir => dir.FullPath == path);
-                    if (directory == null)
+                    var di = new DirectoryInfo(path);
+                    directory = new Directory
                     {
-                        var di = new DirectoryInfo(path);
-                        directory = new Directory
-                        {
-                            FullPath = path,
-                            IsNew = 1,
-                            Name = di.Name
-                        };
-                        db.Directories.Add(directory);
-                        db.SaveChanges();
-                    }
-                    return directory;
+                        FullPath = path,
+                        IsNew = 1,
+                        Name = di.Name
+                    };
+                    db.Directories.Add(directory);
+                    db.SaveChanges();
                 }
+                return directory;
             }
         }
 
         public File GetFile(string path, Directory directory)
         {
-            lock (_dbLock)
+            using (var db = new BackupDbEntities())
             {
-                using (var db = new BackupDbEntities())
+                var file = db.Files.FirstOrDefault(fi => fi.FullPath == path);
+                if (file == null)
                 {
-                    var file = db.Files.FirstOrDefault(fi => fi.FullPath == path);
-                    if (file == null)
-                    {
-                        var crc = GetCrc(path);
-                        var fi = new FileInfo(path);
+                    var crc = GetCrc(path);
+                    var fi = new FileInfo(path);
 
-                        StatusFlag status = StatusFlag.Unchanged;
-                        if (fi.LastWriteTime > _30hoursAgo)
-                            status = StatusFlag.Changed;
+                    StatusFlag status = StatusFlag.Unchanged;
+                    if (fi.LastWriteTime < _30hoursAgo)
+                        status = StatusFlag.Changed;
 
-                        file = new File
-                        {
-                            FullPath = path,
-                            IsNew = (long)status,
-                            Name = fi.Name,
-                            Crc = crc,
-                            DirectoryId = directory.Id,
-                            LastWriteTime = fi.LastWriteTime.Ticks
-                        };
-                        db.Files.Add(file);
-                        db.SaveChanges();
-                    }
-                    else
+                    file = new File
                     {
-                        CheckFileDiff(db, file);
-                    }
-                    return file;
+                        FullPath = path,
+                        IsNew = (long)status,
+                        Name = fi.Name,
+                        Crc = crc,
+                        DirectoryId = directory.Id,
+                        LastWriteTime = fi.LastWriteTime.Ticks
+                    };
+                    db.Files.Add(file);
+                    db.SaveChanges();
                 }
+                else
+                {
+                    CheckFileDiff(db, file);
+                }
+                return file;
             }
         }
 
@@ -96,7 +91,7 @@ namespace Core.Backup
             }
         }
 
-        public void Clean()
+        public void CleanDatabase()
         {
             using (var db = new BackupDbEntities())
             {
@@ -109,36 +104,76 @@ namespace Core.Backup
             }
         }
 
-        public int GetDifferentFiles()
+        public async Task DeleteFiles(Configuration config)
         {
+            await Task.Yield();
             using (var db = new BackupDbEntities())
             {
-                var changes = db.Files.Where(x => x.IsNew ==
-                    (long)StatusFlag.Changed || x.IsNew ==
-                    (long)StatusFlag.Deleted).ToList();
-                foreach (var deletedFile in changes.Where(x => x.IsNew == (long)StatusFlag.Deleted))
+                if (config.DeleteFiles)
                 {
-                    Logger.Info($"We should delete file: {deletedFile.FullPath}");
+                    var deletedFiles = db.Files.Where(x => x.IsNew == (long)StatusFlag.Deleted).ToList();
+                    foreach (var deletedFile in deletedFiles.AsParallel())
+                    {
+                        await Task.Yield();
+                        //TODO delete file
+                        Logger.Info($"We should delete file: {deletedFile.FullPath}");
+                        db.Files.Remove(deletedFile);
+                    }
+                    db.SaveChanges();
                 }
-
             }
-            return 0;
         }
 
-        public async Task<int> CheckDifferentFiles()
+        public async Task CopyFiles(Configuration config)
+        {
+            await Task.Yield();
+            using (var db = new BackupDbEntities())
+            {
+                var changedFiles = db.Files.Where(x => x.IsNew == (long)StatusFlag.Changed).ToList();
+                foreach (var changedFile in changedFiles.AsParallel())
+                {
+                    //TODO delete file
+                    try
+                    {
+                        Logger.Info($"We should upload file: {changedFile.FullPath}");
+                        changedFile.IsNew = (long)StatusFlag.Unchanged;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn($"We were not able to upload file: {changedFile.FullPath}, {ex.Message}");
+                    }
+                }
+                db.SaveChanges();
+            }
+        }
+
+        public async Task DoBackup()
         {
             await Task.Yield();
             var config = ConfigManager.GetConfig();
+            if (config.LastRootDirectory != config.RootDirectory)
+            {
+                Logger.Info("Cleaning database because folders are different");
+                CleanDatabase();
+                config.LastRootDirectory = config.RootDirectory;
+                ConfigManager.SetConfig(config);
+            }
+            await CheckDifferentFiles(config);
+            await DeleteFiles(config);
+            await CopyFiles(config);
+        }
+
+        public async Task CheckDifferentFiles(Configuration config)
+        {
+            await Task.Yield();
             Logger.Info($"Starting to look for folders and files in {config.RootDirectory}");
             var folders = Searcher.GetFolders(config.RootDirectory).ToList();
             Logger.Info($"Folders count: {folders.Count}");
             int count = 0;
             foreach (var folder in folders.AsParallel())
             {
-                await Task.Yield();
                 var directory = GetDirectory(folder);
-                await Task.Yield();
-                var files = Searcher.GetFiles(folder).Select(filePath =>
+                var files = Searcher.GetFiles(folder).AsParallel().Select(filePath =>
                 {
                     var file = GetFile(filePath, directory);
                     return file.Id;
@@ -147,7 +182,6 @@ namespace Core.Backup
                     count += files.Count;
             }
             Logger.Info($"Files checked count: {count}");
-            return count;
         }
 
         private string GetCrc(string file)

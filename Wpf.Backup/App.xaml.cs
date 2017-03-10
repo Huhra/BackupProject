@@ -20,6 +20,7 @@ namespace Wpf.Backup
 
         public App()
         {
+            Logger.Info("Starting backup application");
             try
             {
                 var config = ConfigManager.GetConfig();
