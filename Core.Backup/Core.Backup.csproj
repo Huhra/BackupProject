@@ -87,6 +87,7 @@
     <Compile Include="BackupTimer.cs" />
     <Compile Include="BackupWorker.cs" />
     <Compile Include="Copy\CopyProgress.cs" />
+    <Compile Include="Copy\CopyProgressType.cs" />
     <Compile Include="Copy\EndCopyProgress.cs" />
     <Compile Include="Copy\InitCopyProgress.cs" />
     <Compile Include="Copy\NormalCopyProgress.cs" />
@@ -99,11 +100,13 @@
     </Compile>
     <Compile Include="FileSearcher\Searcher.cs" />
     <Compile Include="Helper\Serializer.cs" />
+    <Compile Include="Helper\SizeConverter.cs" />
     <Compile Include="Parameter.cs">
       <DependentUpon>BackupDb.tt</DependentUpon>
     </Compile>
     <Compile Include="Parameters\ConfigManager.cs" />
     <Compile Include="Parameters\Configuration.cs" />
+    <Compile Include="ProgressWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusFlag.cs" />
   </ItemGroup>

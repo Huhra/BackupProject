@@ -8,20 +8,23 @@ namespace Core.Backup.Copy
 {
     public class EndCopyProgress : CopyProgress
     {
-        public EndCopyProgress(int filesCount, int filesTotalSize, TimeSpan totalTime, bool cancelled = false)
+        public TimeSpan TotalTime { get; }
+
+        public double FilesTotalSize { get; }
+
+        public int FilesCount { get; }
+
+        public EndCopyProgress(int filesCount, double filesTotalSize, TimeSpan totalTime)
+            : base (CopyProgressType.End)
         {
             FilesCount = filesCount;
             FilesTotalSize = filesTotalSize;
             TotalTime = totalTime;
-            Cancelled = cancelled;
         }
 
-        public bool Cancelled { get; set; }
-
-        public TimeSpan TotalTime { get; set; }
-
-        public int FilesTotalSize { get; set; }
-
-        public int FilesCount { get; set; }
+        public override void Log()
+        {
+            Logger.Info($"EndCopyProgress, FilesCount: {FilesCount}, FilesTotalSize: {FilesTotalSize:N1}Mb, TotalTime: {TotalTime:g}");
+        }
     }
 }

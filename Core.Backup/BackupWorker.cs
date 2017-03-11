@@ -54,7 +54,7 @@ namespace Core.Backup
                     var fi = new FileInfo(path);
 
                     StatusFlag status = StatusFlag.Unchanged;
-                    if (fi.LastWriteTime < _30hoursAgo)
+                    //if (fi.LastWriteTime < _30hoursAgo)
                         status = StatusFlag.Changed;
 
                     file = new File
@@ -129,13 +129,26 @@ namespace Core.Backup
             await Task.Yield();
             using (var db = new BackupDbEntities())
             {
+                var remoteFolder = new DirectoryInfo(config.RemoteDirectory);
+                var rootDirectory = new DirectoryInfo(config.RootDirectory);
                 var changedFiles = db.Files.Where(x => x.IsNew == (long)StatusFlag.Changed).ToList();
+                var progress = new ProgressWorker(changedFiles);
+
                 foreach (var changedFile in changedFiles.AsParallel())
                 {
-                    //TODO delete file
                     try
                     {
-                        Logger.Info($"We should upload file: {changedFile.FullPath}");
+                        //Logger.Info($"We should upload file: {changedFile.FullPath}");
+                        var fi = new FileInfo(changedFile.FullPath);
+                        var directoryFullPath = fi.Directory.FullName;
+                        string dirDiff = directoryFullPath.Replace(rootDirectory.FullName, "");
+                        var remoteDir = remoteFolder.FullName + dirDiff;
+                        if (!System.IO.Directory.Exists(remoteDir))
+                            System.IO.Directory.CreateDirectory(remoteDir);
+                        var destinationPath = Path.Combine(remoteDir, fi.Name);
+                        Logger.Info($"Copy {fi.Name} to {destinationPath}");
+                        System.IO.File.Copy(changedFile.FullPath, destinationPath, true);
+                        progress.SetFileCopied(changedFile);
                         changedFile.IsNew = (long)StatusFlag.Unchanged;
                     }
                     catch (Exception ex)

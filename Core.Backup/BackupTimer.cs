@@ -24,7 +24,7 @@ namespace Core.Backup
         private void InitTimer()
         {
             Logger.Debug("InitTimer");
-            _timer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
+            _timer.Interval = TimeSpan.FromSeconds(60).TotalMilliseconds;
             _timer.AutoReset = true;
             _timer.Elapsed += TimerOnElapsed;
         }
