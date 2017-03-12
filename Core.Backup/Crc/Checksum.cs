@@ -12,6 +12,7 @@ namespace Core.Backup.Crc
     {
         public static string GetChecksum(string file)
         {
+            return string.Empty;
             using (var stream = new BufferedStream(System.IO.File.OpenRead(file), 1200000))
             {
                 SHA256Managed sha = new SHA256Managed();

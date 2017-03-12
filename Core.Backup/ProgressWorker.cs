@@ -68,30 +68,41 @@ namespace Core.Backup
 
         public void SetFileCopied(File file)
         {
-            Task.Factory.StartNew(() =>
+            var fileSize = GetFileSize(file.FullPath);
+            int filesCopied;
+            double totalCopied;
+            lock (_lockProgress)
             {
-                var fileSize = GetFileSize(file.FullPath);
-                int filesCopied;
-                double totalCopied;
-                lock (_lockProgress)
+                _filesCopied += 1;
+                _totalCopied += fileSize;
+                filesCopied = _filesCopied;
+                totalCopied = _totalCopied;
+            }
+            var timeSpent = DateTime.Now - _startTime;
+            if (_filesCopied == _filesCount)
+            {
+                RaiseEvent(new EndCopyProgress(_filesCount, _totalSizeMb, timeSpent));
+            }
+            else
+            {
+                var percentage = _totalCopied / _totalSizeMb;
+                var remainingTime = TimeSpan.Zero;
+                if (percentage > double.Epsilon)
                 {
-                    _filesCopied += 1;
-                    _totalCopied += fileSize;
-                    filesCopied = _filesCopied;
-                    totalCopied = _totalCopied;
-                }
-                var timeSpent = DateTime.Now - _startTime;
-                if (_filesCopied == _filesCount)
-                {
-                    RaiseEvent(new EndCopyProgress(_filesCount, _totalSizeMb, timeSpent));
+
+                    var leftCopy = _totalSizeMb - totalCopied;
+                    var mbPerSecond = totalCopied / totalCopied;
+                    var remainingMs = mbPerSecond * leftCopy;
+                    remainingTime = TimeSpan.FromSeconds(remainingMs);
+                    if (remainingTime.TotalSeconds < 1)
+                        remainingTime = TimeSpan.Zero;
                 }
                 else
-                {
-                    var percentage = (_totalCopied * 100.0) / _totalSizeMb;
-                    var remainingTime = new TimeSpan((long)(timeSpent.Ticks * (100.0 - percentage)));
-                    RaiseEvent(new NormalCopyProgress(percentage, filesCopied, _filesCount, totalCopied, _totalSizeMb, remainingTime));
-                }
-            });
+                    percentage = 0;
+                var progress = new NormalCopyProgress(percentage * 100.0, filesCopied, _filesCount, totalCopied,
+                    _totalSizeMb, remainingTime);
+                RaiseEvent(progress);
+            }
         }
 
         private void RaiseEvent(CopyProgress progress)

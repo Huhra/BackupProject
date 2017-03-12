@@ -14,17 +14,19 @@ namespace Core.Backup
         private static readonly ILog Logger = LogManager.GetLogger(typeof(BackupTimer));
         private DateTime _lastStart = DateTime.Today.Subtract(TimeSpan.FromHours(24));
         private readonly Timer _timer = new Timer();
+        private readonly Action<string> _showMessage;
 
-        public BackupTimer()
+        public BackupTimer(Action<string> showMessage)
         {
             Logger.Debug("Constructor");
+            _showMessage = showMessage;
             InitTimer();
         }
 
         private void InitTimer()
         {
             Logger.Debug("InitTimer");
-            _timer.Interval = TimeSpan.FromSeconds(60).TotalMilliseconds;
+            _timer.Interval = TimeSpan.FromSeconds(10).TotalMilliseconds;
             _timer.AutoReset = true;
             _timer.Elapsed += TimerOnElapsed;
         }
@@ -54,7 +56,7 @@ namespace Core.Backup
             {
                 try
                 {
-                    var backupWorker = new BackupWorker();
+                    var backupWorker = new BackupWorker(_showMessage);
                     backupWorker.DoBackup().Wait();
                     return true;
                 }

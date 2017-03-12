@@ -14,11 +14,13 @@ namespace Core.Backup
         private static readonly ILog Logger = LogManager.GetLogger(typeof(BackupWorker));
         private static readonly object _dbLock = new object();
 
-        private static readonly DateTime _30hoursAgo;
+        private readonly DateTime _30hoursAgo;
+        private readonly Action<string> _showMessage;
 
-        static BackupWorker()
+        public BackupWorker(Action<string> showMessage)
         {
             Logger.Info("BackupWorker ctor");
+            _showMessage = showMessage;
             _30hoursAgo = DateTime.Now.Subtract(TimeSpan.FromHours(30));
         }
 
@@ -133,12 +135,11 @@ namespace Core.Backup
                 var rootDirectory = new DirectoryInfo(config.RootDirectory);
                 var changedFiles = db.Files.Where(x => x.IsNew == (long)StatusFlag.Changed).ToList();
                 var progress = new ProgressWorker(changedFiles);
-
-                foreach (var changedFile in changedFiles.AsParallel())
+                var rand = new Random(DateTime.Now.Millisecond);
+                foreach (var changedFile in changedFiles.OrderBy(f => rand.Next()).AsParallel())
                 {
                     try
                     {
-                        //Logger.Info($"We should upload file: {changedFile.FullPath}");
                         var fi = new FileInfo(changedFile.FullPath);
                         var directoryFullPath = fi.Directory.FullName;
                         string dirDiff = directoryFullPath.Replace(rootDirectory.FullName, "");
@@ -146,7 +147,6 @@ namespace Core.Backup
                         if (!System.IO.Directory.Exists(remoteDir))
                             System.IO.Directory.CreateDirectory(remoteDir);
                         var destinationPath = Path.Combine(remoteDir, fi.Name);
-                        Logger.Info($"Copy {fi.Name} to {destinationPath}");
                         System.IO.File.Copy(changedFile.FullPath, destinationPath, true);
                         progress.SetFileCopied(changedFile);
                         changedFile.IsNew = (long)StatusFlag.Unchanged;
@@ -171,8 +171,10 @@ namespace Core.Backup
                 config.LastRootDirectory = config.RootDirectory;
                 ConfigManager.SetConfig(config);
             }
+            _showMessage?.Invoke("Starting backup process, checking files differences");
             await CheckDifferentFiles(config);
             await DeleteFiles(config);
+            _showMessage?.Invoke("Starting files copy");
             await CopyFiles(config);
         }
 
@@ -183,6 +185,8 @@ namespace Core.Backup
             var folders = Searcher.GetFolders(config.RootDirectory).ToList();
             Logger.Info($"Folders count: {folders.Count}");
             int count = 0;
+            int folderIndex = 0;
+            int folderTotal = folders.Count;
             foreach (var folder in folders.AsParallel())
             {
                 var directory = GetDirectory(folder);
@@ -192,7 +196,11 @@ namespace Core.Backup
                     return file.Id;
                 }).ToList();
                 lock (_dbLock)
+                {
+                    folderIndex += 1;
                     count += files.Count;
+                    Logger.Info($"Folder: {folderIndex}/{folderTotal}");
+                }
             }
             Logger.Info($"Files checked count: {count}");
         }
@@ -202,9 +210,9 @@ namespace Core.Backup
             var crc = string.Empty;
             try
             {
-                var fi = new FileInfo(file);
+                //var fi = new FileInfo(file);
                 crc = Checksum.GetChecksum(file);
-                Logger.Info($"CRC: {crc}, File: {fi.Name}");
+                //Logger.Info($"CRC: {crc}, File: {fi.Name}");
             }
             catch (Exception ex)
             {
