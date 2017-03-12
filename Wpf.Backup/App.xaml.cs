@@ -45,33 +45,40 @@ namespace Wpf.Backup
         {
             var config = ConfigManager.GetConfig();
             config.LastRootDirectory = string.Empty;
-            var directories =
-                System.IO.Directory.GetDirectories(config.RemoteDirectory, "*", SearchOption.AllDirectories)
-                    .OrderByDescending(d => d.Length)
-                    .ToList();
-            var files =
-                System.IO.Directory.GetFiles(config.RemoteDirectory, "*.*", SearchOption.AllDirectories)
-                    .OrderByDescending(f => f.Length)
-                    .ToList();
-            foreach (var file in files.AsParallel())
+            try
             {
-                try
+                var directories =
+                        System.IO.Directory.GetDirectories(config.RemoteDirectory, "*", SearchOption.AllDirectories)
+                            .OrderByDescending(d => d.Length)
+                            .ToList();
+                var files =
+                    System.IO.Directory.GetFiles(config.RemoteDirectory, "*.*", SearchOption.AllDirectories)
+                        .OrderByDescending(f => f.Length)
+                        .ToList();
+                foreach (var file in files.AsParallel())
                 {
-                    System.IO.File.Delete(file);
+                    try
+                    {
+                        System.IO.File.Delete(file);
+                    }
+                    catch (Exception e)
+                    {
+                    }
                 }
-                catch (Exception e)
+                foreach (var directory in directories.AsParallel())
                 {
+                    try
+                    {
+                        System.IO.Directory.Delete(directory, true);
+                    }
+                    catch (Exception e)
+                    {
+                    }
                 }
             }
-            foreach (var directory in directories.AsParallel())
+            catch (Exception)
             {
-                try
-                {
-                    System.IO.Directory.Delete(directory, true);
-                }
-                catch (Exception e)
-                {
-                }
+                //ignore
             }
             ConfigManager.SetConfig(config);
         }

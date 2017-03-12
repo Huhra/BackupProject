@@ -91,9 +91,8 @@ namespace Core.Backup
                 {
 
                     var leftCopy = _totalSizeMb - totalCopied;
-                    var mbPerSecond = totalCopied / totalCopied;
-                    var remainingMs = mbPerSecond * leftCopy;
-                    remainingTime = TimeSpan.FromSeconds(remainingMs);
+                    var remainingMs = ((double)timeSpent.Ticks / totalCopied) * leftCopy;
+                    remainingTime = TimeSpan.FromTicks((long)remainingMs);
                     if (remainingTime.TotalSeconds < 1)
                         remainingTime = TimeSpan.Zero;
                 }

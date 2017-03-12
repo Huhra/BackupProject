@@ -3,6 +3,7 @@ using Core.Backup.FileSearcher;
 using Core.Backup.Parameters;
 using log4net;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,44 +40,41 @@ namespace Core.Backup
                         Name = di.Name
                     };
                     db.Directories.Add(directory);
+                    Logger.Info($"Creating folder: {di.Name}");
                     db.SaveChanges();
                 }
                 return directory;
             }
         }
 
-        public File GetFile(string path, Directory directory)
+        public File GetFile(BackupDbEntities db, string path, Directory directory)
         {
-            using (var db = new BackupDbEntities())
+            var file = db.Files.FirstOrDefault(fi => fi.FullPath == path);
+            if (file == null)
             {
-                var file = db.Files.FirstOrDefault(fi => fi.FullPath == path);
-                if (file == null)
-                {
-                    var crc = GetCrc(path);
-                    var fi = new FileInfo(path);
+                var crc = GetCrc(path);
+                var fi = new FileInfo(path);
 
-                    StatusFlag status = StatusFlag.Unchanged;
-                    //if (fi.LastWriteTime < _30hoursAgo)
-                        status = StatusFlag.Changed;
+                StatusFlag status = StatusFlag.Unchanged;
+                //if (fi.LastWriteTime < _30hoursAgo)
+                    status = StatusFlag.Changed;
 
-                    file = new File
-                    {
-                        FullPath = path,
-                        IsNew = (long)status,
-                        Name = fi.Name,
-                        Crc = crc,
-                        DirectoryId = directory.Id,
-                        LastWriteTime = fi.LastWriteTime.Ticks
-                    };
-                    db.Files.Add(file);
-                    db.SaveChanges();
-                }
-                else
+                file = new File
                 {
-                    CheckFileDiff(db, file);
-                }
-                return file;
+                    FullPath = path,
+                    IsNew = (long)status,
+                    Name = fi.Name,
+                    Crc = crc,
+                    DirectoryId = directory.Id,
+                    LastWriteTime = fi.LastWriteTime.Ticks
+                };
+                db.Files.Add(file);
             }
+            else
+            {
+                CheckFileDiff(db, file);
+            }
+            return file;
         }
 
         private void CheckFileDiff(BackupDbEntities db, File file)
@@ -123,6 +121,31 @@ namespace Core.Backup
                     }
                     db.SaveChanges();
                 }
+            }
+        }
+
+        private Dictionary<int, BackupDbEntities> _entities
+            = new Dictionary<int, BackupDbEntities>();
+
+        private BackupDbEntities GetDbContextForThread()
+        {
+            var threadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            lock (_dbLock)
+            {
+                if (_entities.ContainsKey(threadId))
+                    return _entities[threadId];
+                var db = new BackupDbEntities();
+                _entities.Add(threadId, db);
+                return db;
+            }
+        }
+
+        private void SaveAllContexts()
+        {
+            lock (_dbLock)
+            {
+                foreach (var db in _entities.Values)
+                    db.SaveChanges();
             }
         }
 
@@ -189,19 +212,28 @@ namespace Core.Backup
             int folderTotal = folders.Count;
             foreach (var folder in folders.AsParallel())
             {
-                var directory = GetDirectory(folder);
-                var files = Searcher.GetFiles(folder).AsParallel().Select(filePath =>
+                try
                 {
-                    var file = GetFile(filePath, directory);
-                    return file.Id;
-                }).ToList();
-                lock (_dbLock)
+                    var directory = GetDirectory(folder);
+                    var files = Searcher.GetFiles(folder).AsParallel().Select(filePath =>
+                    {
+                        var db = GetDbContextForThread();
+                        var file = GetFile(db, filePath, directory);
+                        return file.Id;
+                    }).ToList();
+                    lock (_dbLock)
+                    {
+                        folderIndex += 1;
+                        count += files.Count;
+                        Logger.Info($"Folder: {folderIndex}/{folderTotal}");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    folderIndex += 1;
-                    count += files.Count;
-                    Logger.Info($"Folder: {folderIndex}/{folderTotal}");
+                    Logger.Error(ex.ToString());
                 }
             }
+            SaveAllContexts();
             Logger.Info($"Files checked count: {count}");
         }
 
